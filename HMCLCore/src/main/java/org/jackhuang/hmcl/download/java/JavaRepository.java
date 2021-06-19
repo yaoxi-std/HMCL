@@ -64,6 +64,8 @@ public final class JavaRepository {
         } else if (OperatingSystem.CURRENT_OS == OperatingSystem.OSX) {
             if (Architecture.CURRENT == Architecture.X86_64) {
                 return Optional.of("mac-os");
+            } else if (Architecture.CURRENT == Architecture.ARM64) {
+                return Optional.of("mac-os");
             }
         } else if (OperatingSystem.CURRENT_OS == OperatingSystem.WINDOWS) {
             if (Architecture.CURRENT == Architecture.X86) {

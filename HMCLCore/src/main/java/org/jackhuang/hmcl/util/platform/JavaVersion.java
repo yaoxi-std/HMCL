@@ -19,15 +19,19 @@ package org.jackhuang.hmcl.util.platform;
 
 import org.jackhuang.hmcl.util.Lang;
 import org.jackhuang.hmcl.util.StringUtils;
+import org.jackhuang.hmcl.util.io.JarUtils;
 import org.jackhuang.hmcl.util.versioning.VersionNumber;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -227,7 +231,7 @@ public final class JavaVersion {
                 .collect(toList());
     }
 
-    private static Stream<Path> searchPotentialJavaExecutables() throws IOException {
+    private static <T> Stream<Path> searchPotentialJavaExecutables() throws IOException {
         List<Stream<Path>> javaExecutables = new ArrayList<>();
         switch (OperatingSystem.CURRENT_OS) {
 
@@ -286,6 +290,20 @@ public final class JavaVersion {
             default:
                 break;
         }
+
+        // Search java in work directory.
+        Path thisJar = JarUtils.thisJar().orElse(Paths.get(System.getProperty("user.dir")));
+        Files.walkFileTree(thisJar.getParent(), (new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes attrs) {
+                Path javaExecutable = getExecutable(path);
+                if (javaExecutable.toFile().exists())
+                    javaExecutables.add(Stream.of(javaExecutable));
+                return FileVisitResult.CONTINUE;
+            }
+
+        }));
+
         return javaExecutables.stream().flatMap(stream -> stream);
     }
 
