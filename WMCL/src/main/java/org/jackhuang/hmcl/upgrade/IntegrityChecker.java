@@ -40,15 +40,15 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.jackhuang.hmcl.util.Logging.LOG;
 
 /**
- * A class that checks the integrity of HMCL.
+ * A class that checks the integrity of WMCL.
  *
  * @author yushijinhun
  */
 public final class IntegrityChecker {
     private IntegrityChecker() {}
 
-    private static final String SIGNATURE_FILE = "META-INF/hmcl_signature";
-    private static final String PUBLIC_KEY_FILE = "assets/hmcl_signature_publickey.der";
+    private static final String SIGNATURE_FILE = "META-INF/wmcl_signature";
+    private static final String PUBLIC_KEY_FILE = "assets/wmcl_signature_publickey.der";
 
     private static PublicKey getPublicKey() throws IOException {
         try (InputStream in = IntegrityChecker.class.getResourceAsStream("/" + PUBLIC_KEY_FILE)) {
@@ -128,7 +128,7 @@ public final class IntegrityChecker {
     }
 
     private static void verifySelf() throws IOException {
-        Path self = JarUtils.thisJar().orElseThrow(() -> new IOException("Failed to find current HMCL location"));
+        Path self = JarUtils.thisJar().orElseThrow(() -> new IOException("Failed to find current WMCL location"));
         requireVerifiedJar(self);
     }
 }

@@ -38,8 +38,8 @@ public final class ConfigHolder {
 
     private ConfigHolder() {}
 
-    public static final String CONFIG_FILENAME = "hmcl.json";
-    public static final String CONFIG_FILENAME_LINUX = ".hmcl.json";
+    public static final String CONFIG_FILENAME = "wmcl.json";
+    public static final String CONFIG_FILENAME_LINUX = ".wmcl.json";
 
     private static Path configLocation;
     private static Config configInstance;

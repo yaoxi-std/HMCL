@@ -23,5 +23,5 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: HMCL
-        path: HMCL/build/libs
+        name: WMCL
+        path: WMCL/build/libs

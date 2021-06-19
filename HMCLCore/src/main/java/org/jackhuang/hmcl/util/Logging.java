@@ -34,7 +34,7 @@ public final class Logging {
     private Logging() {
     }
 
-    public static final Logger LOG = Logger.getLogger("HMCL");
+    public static final Logger LOG = Logger.getLogger("WMCL");
     private static ByteArrayOutputStream storedLogs = new ByteArrayOutputStream();
 
     public static void start(Path logFolder) {

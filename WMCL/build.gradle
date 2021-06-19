@@ -33,7 +33,7 @@ if (shortcommit != null && !shortcommit.isEmpty()) dev = "dev-" + shortcommit
 def buildnumber = System.getenv("BUILD_NUMBER") ?: dev ?: "SNAPSHOT"
 if (System.getenv("BUILD_NUMBER") != null && System.getenv("BUILD_NUMBER_OFFSET") != null)
     buildnumber = (Integer.parseInt(System.getenv("BUILD_NUMBER")) - Integer.parseInt(System.getenv("BUILD_NUMBER_OFFSET"))).toString()
-def versionroot = System.getenv("VERSION_ROOT") ?: "3.3"
+def versionroot = System.getenv("VERSION_ROOT") ?: "4.0"
 version = versionroot + '.' + buildnumber
 
 mainClassName = 'org.jackhuang.hmcl.Main'
@@ -54,7 +54,7 @@ def createChecksum(File file) {
 }
 
 def attachSignature(File jar) {
-    def keyLocation = System.getenv("HMCL_SIGNATURE_KEY");
+    def keyLocation = System.getenv("WMCL_SIGNATURE_KEY");
     if (keyLocation == null)
         return
     def privatekey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(new File(keyLocation).bytes))
@@ -64,7 +64,7 @@ def attachSignature(File jar) {
     new ZipFile(jar).withCloseable { zip ->
         zip.stream()
                 .sorted(Comparator.comparing { it.name })
-                .filter { it.name != "META-INF/hmcl_signature" }
+                .filter { it.name != "META-INF/wmcl_signature" }
                 .forEach {
                     signer.update(digest("SHA-512", it.name.getBytes("UTF-8")))
                     signer.update(digest("SHA-512", zip.getInputStream(it).bytes))
@@ -73,7 +73,7 @@ def attachSignature(File jar) {
     def signature = signer.sign()
 
     FileSystems.newFileSystem(URI.create("jar:" + jar.toURI()), [:]).withCloseable { zipfs ->
-        Files.newOutputStream(zipfs.getPath("META-INF/hmcl_signature")).withCloseable { it << signature }
+        Files.newOutputStream(zipfs.getPath("META-INF/wmcl_signature")).withCloseable { it << signature }
     }
 }
 
