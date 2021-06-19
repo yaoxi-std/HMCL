@@ -1,5 +1,5 @@
-rootProject.name = 'HMCL3'
-include 'HMCL'
+rootProject.name = 'WMCL4'
+include 'WMCL'
 include 'HMCLCore'
 include 'HMCLTransformerDiscoveryService'
 

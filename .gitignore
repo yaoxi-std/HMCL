@@ -16,20 +16,20 @@ NVIDIA
 
 # gradle build
 /build/
-/HMCL/build/
+/WMCL/build/
 /HMCLCore/build/
 /HMCLTransformerDiscoveryService/build/
 
 # idea
 .idea
 /out/
-/HMCL/out/
+/WMCL/out/
 /HMCLCore/out/
 /HMCLTransformerDiscoveryService/out/
 
 # eclipse
 /bin/
-/HMCL/bin/
+/WMCL/bin/
 /HMCLCore/bin/
 /HMCLTransformerDiscoveryService/bin/
 .classpath
@@ -40,7 +40,7 @@ NVIDIA
 .nb-gradle
 
 *.exe
-!/HMCL/src/main/resources/assets/HMCLauncher.exe
+!/WMCL/src/main/resources/assets/HMCLauncher.exe
 
 # macos
 .DS_Store
