@@ -499,4 +499,9 @@ public class DefaultGameRepository implements GameRepository {
                 .append("baseDirectory", baseDirectory)
                 .toString();
     }
+
+    @Override
+    public File getMinecraftRoot() {
+        return getBaseDirectory();
+    }
 }

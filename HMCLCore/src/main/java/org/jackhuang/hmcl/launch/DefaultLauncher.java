@@ -436,7 +436,10 @@ public class DefaultLauncher extends Launcher {
                     .replace("$INST_ID", versionName)
                     .replace("$INST_DIR", repository.getVersionRoot(version.getId()).getAbsolutePath())
                     .replace("$INST_MC_DIR", repository.getRunDirectory(version.getId()).getAbsolutePath())
-                    .replace("$INST_JAVA", options.getJava().getBinary().toString());
+                    .replace("$INST_DOT_MCDIR", repository.getMinecraftRoot().getAbsolutePath())
+                    .replace("$INST_JAVA", options.getJava().getBinary().toString())
+                    .replace("$INST_LIB_DIR", options.getNativesDirType() == NativesDirectoryType.CUSTOM ?
+                                              options.getNativesDir() : repository.getNativeDirectory(version.getId()).getAbsolutePath());
 
             new ProcessBuilder(StringUtils.tokenize(preLaunchCommand))
                     .directory(runDirectory).start().waitFor();
@@ -498,7 +501,16 @@ public class DefaultLauncher extends Launcher {
                 }
             }
             if (StringUtils.isNotBlank(options.getPreLaunchCommand())) {
-                writer.write(options.getPreLaunchCommand());
+                String versionName = Optional.ofNullable(options.getVersionName()).orElse(version.getId());
+                writer.write(options.getPreLaunchCommand()
+                      .replace("$INST_NAME", versionName)
+                      .replace("$INST_ID", versionName)
+                      .replace("$INST_DIR", repository.getVersionRoot(version.getId()).getAbsolutePath())
+                      .replace("$INST_MC_DIR", repository.getRunDirectory(version.getId()).getAbsolutePath())
+                      .replace("$INST_DOT_MCDIR", repository.getMinecraftRoot().getAbsolutePath())
+                      .replace("$INST_JAVA", options.getJava().getBinary().toString())
+                      .replace("$INST_LIB_DIR", options.getNativesDirType() == NativesDirectoryType.CUSTOM ?
+                                                options.getNativesDir() : repository.getNativeDirectory(version.getId()).getAbsolutePath()));
                 writer.newLine();
             }        
             if (options.getVersionSettingType() == VersionSettingType.CLIENT_VERSION) {

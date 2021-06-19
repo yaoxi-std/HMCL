@@ -86,6 +86,8 @@ public interface GameRepository extends VersionProvider {
         return Task.runAsync(this::refreshVersions);
     }
 
+    File getMinecraftRoot();
+
     /**
      * Gets the root folder of specific version.
      * The root folders the versions must be unique.
