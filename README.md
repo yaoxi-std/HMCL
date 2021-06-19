@@ -7,7 +7,7 @@ WMCL is a Minecraft launcher which supports Mod management, game customizing, au
 No plugin API is provided.
 
 ## Download
-Download the latest version [from Github](https://hmcl.huangyuhui.net/download)
+Download the latest version [from Github](https://github.com/yaoxi-std/WMCL/releases)
 
 Note: Github releases are outdated.
 
@@ -32,9 +32,13 @@ Chinese Translation:
 ## Contribution
 
 If you want to submit a pull request, there're some requirements:
-* IDE: Intellij IDEA.
+* IDE: Intellij IDEA or Visual Studio Code.
 * Compiler: Java 1.8.
 * Do NOT modify `gradle` files.
+
+## Sponsor
+
+If you want to sponsor, you can go to [爱发电](https://afdian.net/@yaoxi-std). Thanks!
 
 ### Compilation
 

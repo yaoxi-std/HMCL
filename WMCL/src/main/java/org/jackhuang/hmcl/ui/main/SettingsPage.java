@@ -245,7 +245,8 @@ public final class SettingsPage extends SettingsView implements DecoratorPage {
 
     @Override
     protected void onSponsor() {
-        FXUtils.openLink("https://hmcl.huangyuhui.net/api/redirect/sponsor");
+        FXUtils.openLink("https://afdian.net/@huanghongxun");
+        FXUtils.openLink("https://afdian.net/@yaoxi-std");
     }
 
     @Override

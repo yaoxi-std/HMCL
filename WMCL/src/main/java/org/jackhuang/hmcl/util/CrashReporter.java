@@ -143,11 +143,12 @@ public class CrashReporter implements Thread.UncaughtExceptionHandler {
             map.put("version", Metadata.VERSION);
             map.put("log", Logging.getLogs());
             try {
-                String response = NetworkUtils.doPost(NetworkUtils.toURL("https://hmcl.huangyuhui.net/hmcl/crash.php"), map);
+                // TODO: Add crash report url.
+                String response = NetworkUtils.doPost(NetworkUtils.toURL(""), map);
                 if (StringUtils.isNotBlank(response))
                     LOG.log(Level.SEVERE, "Crash server response: " + response);
             } catch (IOException ex) {
-                LOG.log(Level.SEVERE, "Unable to post HMCL server.", ex);
+                LOG.log(Level.SEVERE, "Unable to post WMCL server.", ex);
             }
         });
         t.setDaemon(true);

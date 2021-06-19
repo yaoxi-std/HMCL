@@ -250,6 +250,6 @@ public final class VersionsPage extends BorderPane implements WizardPage, Refres
 
     @FXML
     private void onSponsor() {
-        FXUtils.openLink("https://hmcl.huangyuhui.net/api/redirect/bmclapi_sponsor");
+        FXUtils.openLink("https://afdian.net/@bangbang93");
     }
 }

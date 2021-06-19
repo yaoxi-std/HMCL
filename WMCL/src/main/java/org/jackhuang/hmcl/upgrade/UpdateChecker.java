@@ -31,10 +31,8 @@ import java.util.logging.Level;
 
 import static org.jackhuang.hmcl.setting.ConfigHolder.config;
 import static org.jackhuang.hmcl.ui.FXUtils.onInvalidating;
-import static org.jackhuang.hmcl.util.Lang.mapOf;
 import static org.jackhuang.hmcl.util.Lang.thread;
 import static org.jackhuang.hmcl.util.Logging.LOG;
-import static org.jackhuang.hmcl.util.Pair.pair;
 import static org.jackhuang.hmcl.util.versioning.VersionNumber.asVersion;
 
 public final class UpdateChecker {
@@ -87,11 +85,14 @@ public final class UpdateChecker {
             throw new IOException("Self verification failed");
         }
 
-        String url = NetworkUtils.withQuery(Metadata.UPDATE_URL, mapOf(
-                pair("version", Metadata.VERSION),
-                pair("channel", channel.channelName)));
+        // TODO: Add check update url.
+        return null;
 
-        return RemoteVersion.fetch(url);
+        // String url = NetworkUtils.withQuery(Metadata.UPDATE_URL, mapOf(
+        //         pair("version", Metadata.VERSION),
+        //         pair("channel", channel.channelName)));
+
+        // return RemoteVersion.fetch(url);
     }
 
     private static boolean isDevelopmentVersion(String version) {

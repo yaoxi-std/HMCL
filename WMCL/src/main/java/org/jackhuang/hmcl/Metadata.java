@@ -35,10 +35,10 @@ public final class Metadata {
     public static final String TITLE = NAME + " " + VERSION;
     
     public static final String UPDATE_URL = System.getProperty("hmcl.update_source.override", "https://hmcl.huangyuhui.net/api/update_link");
-    public static final String CONTACT_URL = "https://hmcl.huangyuhui.net/contact";
-    public static final String HELP_URL = "https://hmcl.huangyuhui.net/help";
-    public static final String CHANGELOG_URL = "https://hmcl.huangyuhui.net/changelog/";
-    public static final String PUBLISH_URL = "http://www.mcbbs.net/thread-142335-1-1.html";
+    public static final String CONTACT_URL = "https://github.com/yaoxi-std/WMCL/issues";
+    public static final String HELP_URL = "https://github.com/yaoxi-std/WMCL/issues";
+    public static final String CHANGELOG_URL = "https://github.com/yaoxi-std/WMCL/commits";
+    public static final String PUBLISH_URL = "https://github.com/yaoxi-std/WMCL/releases";
 
     public static final Path MINECRAFT_DIRECTORY = OperatingSystem.getWorkingDirectory("minecraft");
     public static final Path HMCL_DIRECTORY = getHMCLDirectory();
@@ -47,8 +47,8 @@ public final class Metadata {
         String home = System.getProperty("user.home", ".");
         if (OperatingSystem.CURRENT_OS == OperatingSystem.LINUX) {
             // to fulfill XDG standard.
-            return Paths.get(home, ".cache", "hmcl");
+            return Paths.get(home, ".cache", "wmcl");
         }
-        return OperatingSystem.getWorkingDirectory("hmcl");
+        return OperatingSystem.getWorkingDirectory("wmcl");
     }
 }
