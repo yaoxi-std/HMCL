@@ -27,6 +27,7 @@ import org.jackhuang.hmcl.util.platform.JavaVersion;
 import org.jackhuang.hmcl.util.platform.OperatingSystem;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -61,12 +62,17 @@ public final class JavaRepository {
         Optional<String> platformOptional = getCurrentJavaPlatform();
         if (platformOptional.isPresent()) {
             String platform = platformOptional.get();
-            for (Path component : Files.newDirectoryStream(getJavaStoragePath())) {
-                Path javaHome = component.resolve(platform).resolve(component.getFileName());
-                try {
-                    addJava(javaHome);
-                } catch (IOException e) {
-                    LOG.log(Level.WARNING, "Failed to determine Java at " + javaHome, e);
+            Path javaStoragePath = getJavaStoragePath();
+            if (Files.isDirectory(javaStoragePath)) {
+                try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(javaStoragePath)) {
+                    for (Path component : dirStream) {
+                        Path javaHome = component.resolve(platform).resolve(component.getFileName());
+                        try {
+                            addJava(javaHome);
+                        } catch (IOException e) {
+                            LOG.log(Level.WARNING, "Failed to determine Java at " + javaHome, e);
+                        }
+                    }
                 }
             }
         }
