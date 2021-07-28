@@ -47,19 +47,13 @@ import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 import static org.jackhuang.hmcl.util.Lang.mapOf;
 import static org.jackhuang.hmcl.util.Pair.pair;
 
 /**
- *
  * @author huangyuhui
  */
 public class DefaultLauncher extends Launcher {
@@ -91,53 +85,63 @@ public class DefaultLauncher extends Launcher {
         if (!options.isNoGeneratedJVMArgs()) {
             appendJvmArgs(res);
 
-            res.add("-Dminecraft.client.jar=" + repository.getClientJar(version));
+            res.addDefault("-Dminecraft.client.jar=", repository.getVersionJar(version).toString());
 
             if (OperatingSystem.CURRENT_OS == OperatingSystem.OSX) {
-                res.add("-Xdock:name=Minecraft " + version.getId());
-                res.add("-Xdock:icon=" + repository.getAssetObject(version.getId(), version.getAssetIndex().getId(), "icons/minecraft.icns").getAbsolutePath());
+                res.addDefault("-Xdock:name=", "Minecraft " + version.getId());
+                res.addDefault("-Xdock:icon=", repository.getAssetObject(version.getId(), version.getAssetIndex().getId(), "icons/minecraft.icns").getAbsolutePath());
             }
 
             if (OperatingSystem.CURRENT_OS != OperatingSystem.WINDOWS)
-                res.add("-Duser.home=" + options.getGameDir().getParent());
+                res.addDefault("-Duser.home=", options.getGameDir().getParent());
 
-            // Force using G1GC with its settings
+            // Using G1GC with its settings by default
             if (options.getJava().getParsedVersion() >= JavaVersion.JAVA_8) {
-                res.add("-XX:+UnlockExperimentalVMOptions");
-                res.add("-XX:+UseG1GC");
-                res.add("-XX:G1NewSizePercent=20");
-                res.add("-XX:G1ReservePercent=20");
-                res.add("-XX:MaxGCPauseMillis=50");
-                res.add("-XX:G1HeapRegionSize=16M");
+                boolean addG1Args = true;
+                for (String javaArg : options.getJavaArguments()) {
+                    if ("-XX:-UseG1GC".equals(javaArg) || (javaArg.startsWith("-XX:+Use") && javaArg.endsWith("GC"))) {
+                        addG1Args = false;
+                        break;
+                    }
+                }
+                if (addG1Args) {
+                    res.addUnstableDefault("UnlockExperimentalVMOptions", true);
+                    res.addUnstableDefault("UseG1GC", true);
+                    res.addUnstableDefault("G1NewSizePercent", "20");
+                    res.addUnstableDefault("G1ReservePercent", "20");
+                    res.addUnstableDefault("MaxGCPauseMillis", "50");
+                    res.addUnstableDefault("G1HeapRegionSize", "16m");
+                }
             }
 
             if (options.getMetaspace() != null && options.getMetaspace() > 0)
                 if (options.getJava().getParsedVersion() < JavaVersion.JAVA_8)
-                    res.add("-XX:PermSize= " + options.getMetaspace() + "m");
+                    res.addDefault("-XX:PermSize=", options.getMetaspace() + "m");
                 else
-                    res.add("-XX:MetaspaceSize=" + options.getMetaspace() + "m");
+                    res.addDefault("-XX:MetaspaceSize=", options.getMetaspace() + "m");
 
-            res.add("-XX:-UseAdaptiveSizePolicy");
-            res.add("-XX:-OmitStackTraceInFastThrow");
-            res.add("-Xmn128m");
+            res.addUnstableDefault("UseAdaptiveSizePolicy", false);
+            res.addUnstableDefault("OmitStackTraceInFastThrow", false);
+            res.addUnstableDefault("DontCompileHugeMethods", false);
+            res.addDefault("-Xmn", "128m");
 
             // As 32-bit JVM allocate 320KB for stack by default rather than 64-bit version allocating 1MB,
             // causing Minecraft 1.13 crashed accounting for java.lang.StackOverflowError.
             if (options.getJava().getPlatform() == Platform.BIT_32) {
-                res.add("-Xss1M");
+                res.addDefault("-Xss", "1m");
             }
 
             if (options.getMaxMemory() != null && options.getMaxMemory() > 0)
-                res.add("-Xmx" + options.getMaxMemory() + "m");
+                res.addDefault("-Xmx", options.getMaxMemory() + "m");
 
             if (options.getMinMemory() != null && options.getMinMemory() > 0)
-                res.add("-Xms" + options.getMinMemory() + "m");
+                res.addDefault("-Xms", options.getMinMemory() + "m");
 
             if (options.getJava().getParsedVersion() == JavaVersion.JAVA_16)
-                res.add("--illegal-access=permit");
+                res.addDefault("--illegal-access=", "permit");
 
-            res.add("-Dfml.ignoreInvalidMinecraftCertificates=true");
-            res.add("-Dfml.ignorePatchDiscrepancies=true");
+            res.addDefault("-Dfml.ignoreInvalidMinecraftCertificates=", "true");
+            res.addDefault("-Dfml.ignorePatchDiscrepancies=", "true");
         }
 
         Proxy proxy = options.getProxy();
@@ -147,24 +151,18 @@ public class DefaultLauncher extends Launcher {
                 String host = address.getHostString();
                 int port = address.getPort();
                 if (proxy.type() == Proxy.Type.HTTP) {
-                    res.add("-Dhttp.proxyHost=" + host);
-                    res.add("-Dhttp.proxyPort=" + port);
-                    res.add("-Dhttps.proxyHost=" + host);
-                    res.add("-Dhttps.proxyPort=" + port);
+                    res.addDefault("-Dhttp.proxyHost=", host);
+                    res.addDefault("-Dhttp.proxyPort=", String.valueOf(port));
+                    res.addDefault("-Dhttps.proxyHost=", host);
+                    res.addDefault("-Dhttps.proxyPort=", String.valueOf(port));
                 } else if (proxy.type() == Proxy.Type.SOCKS) {
-                    res.add("-DsocksProxyHost=" + host);
-                    res.add("-DsocksProxyPort=" + port);
+                    res.addDefault("-DsocksProxyHost=", host);
+                    res.addDefault("-DsocksProxyPort=", String.valueOf(port));
                 }
             }
         }
 
-        LinkedList<String> classpath = new LinkedList<>();
-        for (Library library : version.getLibraries())
-            if (library.appliesToCurrentEnvironment() && !library.isNative()) {
-                File f = repository.getLibraryFile(version, library);
-                if (f.exists() && f.isFile())
-                    classpath.add(f.getAbsolutePath());
-            }
+        List<String> classpath = repository.getClasspath(version);
 
         File jar = repository.getClientJar(version);
         if (!jar.exists() || !jar.isFile())
@@ -178,7 +176,6 @@ public class DefaultLauncher extends Launcher {
         configuration.put("${natives_directory}", nativeFolder.getAbsolutePath());
         configuration.put("${game_assets}", gameAssets.getAbsolutePath());
         configuration.put("${assets_root}", gameAssets.getAbsolutePath());
-        configuration.put("${libraries_directory}", repository.getLibrariesDirectory(version).getAbsolutePath());
 
         res.addAll(Arguments.parseArguments(version.getArguments().map(Arguments::getJvm).orElseGet(this::getDefaultJVMArguments), configuration));
         if (authInfo.getArguments() != null && authInfo.getArguments().getJvm() != null && !authInfo.getArguments().getJvm().isEmpty())
@@ -223,7 +220,7 @@ public class DefaultLauncher extends Launcher {
             }
         }
 
-        res.addAllWithoutParsing(options.getGameArguments());
+        res.addAllWithoutParsing(Arguments.parseStringArguments(options.getGameArguments(), configuration));
 
         res.removeIf(it -> getForbiddens().containsKey(it) && getForbiddens().get(it).get());
         return res;
@@ -381,6 +378,7 @@ public class DefaultLauncher extends Launcher {
 
     protected Map<String, String> getConfigurations() {
         return mapOf(
+                // defined by Minecraft official launcher
                 pair("${auth_player_name}", authInfo.getUsername()),
                 pair("${auth_session}", authInfo.getAccessToken()),
                 pair("${auth_access_token}", authInfo.getAccessToken()),
@@ -393,7 +391,19 @@ public class DefaultLauncher extends Launcher {
                 pair("${assets_index_name}", version.getAssetIndex().getId()),
                 pair("${user_properties}", authInfo.getUserProperties()),
                 pair("${resolution_width}", options.getWidth().toString()),
-                pair("${resolution_height}", options.getHeight().toString())
+                pair("${resolution_height}", options.getHeight().toString()),
+                pair("${library_directory}", repository.getLibrariesDirectory(version).getAbsolutePath()),
+                pair("${classpath_separator}", OperatingSystem.PATH_SEPARATOR),
+                pair("${primary_jar}", repository.getVersionJar(version).getAbsolutePath()),
+                pair("${language}", Locale.getDefault().toString()),
+
+                // defined by HMCL
+                // libraries_directory stands for historical reasons here. We don't know the official launcher
+                // had already defined "library_directory" as the placeholder for path to ".minecraft/libraries"
+                // when we propose this placeholder.
+                pair("${libraries_directory}", repository.getLibrariesDirectory(version).getAbsolutePath()),
+                // file_separator is used in -DignoreList
+                pair("${file_separator}", OperatingSystem.FILE_SEPARATOR)
         );
     }
 

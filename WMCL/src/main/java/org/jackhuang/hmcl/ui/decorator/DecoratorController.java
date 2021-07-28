@@ -1,6 +1,6 @@
 /*
  * Hello Minecraft! Launcher
- * Copyright (C) 2020  huangyuhui <huanghongxun2008@126.com> and contributors
+ * Copyright (C) 2021  huangyuhui <huanghongxun2008@126.com> and contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,26 +18,18 @@
 package org.jackhuang.hmcl.ui.decorator;
 
 import com.jfoenix.controls.JFXDialog;
-import javafx.animation.Interpolator;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
-import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import org.jackhuang.hmcl.Launcher;
 import org.jackhuang.hmcl.auth.authlibinjector.AuthlibInjectorDnD;
-import org.jackhuang.hmcl.setting.Config;
 import org.jackhuang.hmcl.setting.EnumBackgroundImage;
 import org.jackhuang.hmcl.ui.Controllers;
 import org.jackhuang.hmcl.ui.FXUtils;
@@ -55,22 +47,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.stream.Stream;
 
+import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toList;
 import static org.jackhuang.hmcl.setting.ConfigHolder.config;
 import static org.jackhuang.hmcl.ui.FXUtils.newImage;
 import static org.jackhuang.hmcl.util.Logging.LOG;
+import static org.jackhuang.hmcl.util.io.FileUtils.getExtension;
 
 public class DecoratorController {
     private static final String PROPERTY_DIALOG_CLOSE_HANDLER = DecoratorController.class.getName() + ".dialog.closeListener";
 
     private final Decorator decorator;
-    private final ImageView welcomeView;
     private final Navigator navigator;
 
     private JFXDialog dialog;
@@ -89,27 +81,6 @@ public class DecoratorController {
         decorator.onBackNavButtonActionProperty().set(e -> back());
         decorator.onRefreshNavButtonActionProperty().set(e -> refresh());
 
-        welcomeView = new ImageView();
-        welcomeView.setImage(newImage("/assets/img/welcome.png"));
-        welcomeView.setCursor(Cursor.HAND);
-        FXUtils.limitSize(welcomeView, 796, 517);
-        welcomeView.setOnMouseClicked(e -> {
-            Timeline nowAnimation = new Timeline();
-            nowAnimation.getKeyFrames().addAll(
-                    new KeyFrame(Duration.ZERO, new KeyValue(welcomeView.opacityProperty(), 1.0D, Interpolator.EASE_BOTH)),
-                    new KeyFrame(new Duration(300), new KeyValue(welcomeView.opacityProperty(), 0.0D, Interpolator.EASE_BOTH)),
-                    new KeyFrame(new Duration(300), e2 -> decorator.getContainer().remove(welcomeView))
-            );
-            nowAnimation.play();
-        });
-
-        if (switchedToNewUI()) {
-            if (config().getLocalization().getLocale() == Locale.CHINA) {
-                // currently, user guide is only available in Chinese
-                decorator.getContainer().setAll(welcomeView);
-            }
-        }
-
         setupBackground();
 
         setupAuthlibInjectorDnD();
@@ -117,17 +88,6 @@ public class DecoratorController {
 
     public Decorator getDecorator() {
         return decorator;
-    }
-
-    /**
-     * @return true if the user is seeing the current version of UI for the first time.
-     */
-    private boolean switchedToNewUI() {
-        if (config().getUiVersion() < Config.CURRENT_UI_VERSION) {
-            config().setUiVersion(Config.CURRENT_UI_VERSION);
-            return true;
-        }
-        return false;
     }
 
     // ==== Background ====
@@ -174,10 +134,10 @@ public class DecoratorController {
         List<Path> candidates;
         try (Stream<Path> stream = Files.list(imageDir)) {
             candidates = stream
-                .filter(Files::isRegularFile)
+                .filter(Files::isReadable)
                     .filter(it -> {
-                        String filename = it.getFileName().toString();
-                        return filename.endsWith(".png") || filename.endsWith(".jpg");
+                        String ext = getExtension(it).toLowerCase();
+                        return ext.equals("png") || ext.equals("jpg");
                     })
                     .collect(toList());
         } catch (IOException e) {
@@ -199,13 +159,23 @@ public class DecoratorController {
     }
 
     private Optional<Image> tryLoadImage(Path path) {
-        if (Files.isRegularFile(path)) {
-            try {
-                return Optional.of(new Image(path.toAbsolutePath().toUri().toString()));
-            } catch (IllegalArgumentException ignored) {
-            }
+        if (!Files.isReadable(path))
+            return Optional.empty();
+
+        Image img;
+        try {
+            img = new Image(path.toAbsolutePath().toUri().toString());
+        } catch (IllegalArgumentException e) {
+            LOG.log(WARNING, "Couldn't load background image", e);
+            return Optional.empty();
         }
-        return Optional.empty();
+
+        if (img.getException() != null) {
+            LOG.log(WARNING, "Couldn't load background image", img.getException());
+            return Optional.empty();
+        }
+
+        return Optional.of(img);
     }
 
     // ==== Navigation ====

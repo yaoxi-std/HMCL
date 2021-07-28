@@ -46,3 +46,7 @@ NVIDIA
 
 # macos
 .DS_Store
+
+# test
+/hmcl.json
+/.hmcl.json
