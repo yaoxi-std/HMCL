@@ -17,13 +17,17 @@
  */
 package org.jackhuang.hmcl.ui.versions;
 
+import com.jfoenix.controls.JFXButton;
 import javafx.stage.FileChooser;
 import org.jackhuang.hmcl.download.game.GameAssetDownloadTask;
 import org.jackhuang.hmcl.game.GameDirectoryType;
 import org.jackhuang.hmcl.game.GameRepository;
 import org.jackhuang.hmcl.game.LauncherHelper;
+import org.jackhuang.hmcl.mod.curse.CurseAddon;
 import org.jackhuang.hmcl.setting.Accounts;
 import org.jackhuang.hmcl.setting.Profile;
+import org.jackhuang.hmcl.setting.Profiles;
+import org.jackhuang.hmcl.task.FileDownloadTask;
 import org.jackhuang.hmcl.task.Schedulers;
 import org.jackhuang.hmcl.task.Task;
 import org.jackhuang.hmcl.task.TaskExecutor;
@@ -33,6 +37,7 @@ import org.jackhuang.hmcl.ui.construct.MessageDialogPane;
 import org.jackhuang.hmcl.ui.construct.PromptDialogPane;
 import org.jackhuang.hmcl.ui.construct.Validator;
 import org.jackhuang.hmcl.ui.download.ModpackInstallWizardProvider;
+import org.jackhuang.hmcl.ui.download.VanillaInstallWizardProvider;
 import org.jackhuang.hmcl.ui.export.ExportWizardProvider;
 import org.jackhuang.hmcl.util.Logging;
 import org.jackhuang.hmcl.util.StringUtils;
@@ -41,6 +46,9 @@ import org.jackhuang.hmcl.util.platform.OperatingSystem;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
@@ -50,15 +58,70 @@ public final class Versions {
     private Versions() {
     }
 
+    public static void addNewGame() {
+        Profile profile = Profiles.getSelectedProfile();
+        if (profile.getRepository().isLoaded()) {
+            Controllers.getDecorator().startWizard(new VanillaInstallWizardProvider(profile), i18n("install.new_game"));
+        }
+    }
+
+    public static void importModpack() {
+        Profile profile = Profiles.getSelectedProfile();
+        if (profile.getRepository().isLoaded()) {
+            Controllers.getDecorator().startWizard(new ModpackInstallWizardProvider(profile), i18n("install.modpack"));
+        }
+    }
+
+    public static void downloadModpack() {
+        Profile profile = Profiles.getSelectedProfile();
+        if (profile.getRepository().isLoaded()) {
+            Controllers.getModpackDownloadListPage().loadVersion(profile, null);
+            Controllers.navigate(Controllers.getModpackDownloadListPage());
+        }
+    }
+
+    public static void downloadModpackImpl(Profile profile, String version, CurseAddon.LatestFile file) {
+        Path modpack;
+        URL downloadURL;
+        try {
+            modpack = Files.createTempFile("modpack", ".zip");
+            downloadURL = new URL(file.getDownloadUrl());
+        } catch (IOException e) {
+            Controllers.dialog(
+                    i18n("install.failed.downloading.detail", file.getDownloadUrl()) + "\n" + StringUtils.getStackTrace(e),
+                    i18n("download.failed"), MessageDialogPane.MessageType.ERROR);
+            return;
+        }
+        Controllers.taskDialog(
+                new FileDownloadTask(downloadURL, modpack.toFile())
+                        .whenComplete(Schedulers.javafx(), e -> {
+                            if (e == null) {
+                                Controllers.getDecorator().startWizard(new ModpackInstallWizardProvider(Profiles.getSelectedProfile(), modpack.toFile()));
+                            } else {
+                                Controllers.dialog(
+                                        i18n("install.failed.downloading.detail", file.getDownloadUrl()) + "\n" + StringUtils.getStackTrace(e),
+                                        i18n("download.failed"), MessageDialogPane.MessageType.ERROR);
+                            }
+                        }).executor(true),
+                i18n("message.downloading")
+        );
+    }
+
     public static void deleteVersion(Profile profile, String version) {
         boolean isIndependent = profile.getVersionSetting(version).getGameDirType() == GameDirectoryType.VERSION_FOLDER;
         boolean isMovingToTrashSupported = FileUtils.isMovingToTrashSupported();
         String message = isIndependent ? i18n("version.manage.remove.confirm.independent", version) :
                 isMovingToTrashSupported ? i18n("version.manage.remove.confirm.trash", version, version + "_removed") :
                         i18n("version.manage.remove.confirm", version);
-        Controllers.confirm(message, i18n("message.confirm"), () -> {
-            profile.getRepository().removeVersionFromDisk(version);
-        }, null);
+
+        JFXButton deleteButton = new JFXButton(i18n("button.delete"));
+        deleteButton.getStyleClass().add("dialog-error");
+        deleteButton.setOnAction(e -> profile.getRepository().removeVersionFromDisk(version));
+
+        JFXButton cancelButton = new JFXButton(i18n("button.cancel"));
+        cancelButton.getStyleClass().add("dialog-cancel");
+        
+        Controllers.dialogWithButtons(message, i18n("message.warning"), MessageDialogPane.MessageType.WARNING, deleteButton, cancelButton);
     }
 
     public static CompletableFuture<String> renameVersion(Profile profile, String version) {
@@ -158,7 +221,7 @@ public final class Versions {
             Controllers.getRootPage().checkAccount();
         else if (id == null || !profile.getRepository().isLoaded() || !profile.getRepository().hasVersion(id))
             Controllers.dialog(i18n("version.empty.launch"), i18n("launch.failed"), MessageDialogPane.MessageType.ERROR, () -> {
-                Controllers.getRootPage().getSelectionModel().select(Controllers.getRootPage().getGameTab());
+                Controllers.navigate(Controllers.getGameListPage());
             });
         else
             return true;

@@ -18,49 +18,47 @@
 package org.jackhuang.hmcl.ui.profile;
 
 import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXRadioButton;
-import com.jfoenix.effects.JFXDepthManager;
+import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.SkinBase;
-import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import org.jackhuang.hmcl.setting.Theme;
 import org.jackhuang.hmcl.ui.FXUtils;
 import org.jackhuang.hmcl.ui.SVG;
+import org.jackhuang.hmcl.ui.construct.RipplerContainer;
 import org.jackhuang.hmcl.ui.construct.TwoLineListItem;
-
-import static org.jackhuang.hmcl.ui.FXUtils.newImage;
+import org.jackhuang.hmcl.ui.versions.VersionPage;
 
 public class ProfileListItemSkin extends SkinBase<ProfileListItem> {
+    private final PseudoClass SELECTED = PseudoClass.getPseudoClass("selected");
 
     public ProfileListItemSkin(ProfileListItem skinnable) {
         super(skinnable);
 
+
         BorderPane root = new BorderPane();
+        root.setPickOnBounds(false);
+        RipplerContainer container = new RipplerContainer(root);
 
-        JFXRadioButton chkSelected = new JFXRadioButton() {
-            @Override
-            public void fire() {
-                skinnable.fire();
-            }
-        };
-        BorderPane.setAlignment(chkSelected, Pos.CENTER);
-        chkSelected.selectedProperty().bind(skinnable.selectedProperty());
-        root.setLeft(chkSelected);
+        FXUtils.onChangeAndOperate(skinnable.selectedProperty(), active -> {
+            skinnable.pseudoClassStateChanged(SELECTED, active);
+        });
 
-        HBox center = new HBox();
-        center.setSpacing(8);
-        center.setAlignment(Pos.CENTER_LEFT);
+        getSkinnable().addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+            getSkinnable().setSelected(true);
+        });
 
-        ImageView imageView = new ImageView();
-        FXUtils.limitSize(imageView, 32, 32);
-        imageView.imageProperty().set(newImage("/assets/img/craft_table.png"));
+        Node left = VersionPage.wrap(SVG.folderOutline(null, 24, 24));
+        root.setLeft(left);
+        BorderPane.setAlignment(left, Pos.CENTER_LEFT);
 
         TwoLineListItem item = new TwoLineListItem();
+        item.setPickOnBounds(false);
         BorderPane.setAlignment(item, Pos.CENTER);
-        center.getChildren().setAll(imageView, item);
-        root.setCenter(center);
+        root.setCenter(item);
 
         HBox right = new HBox();
         right.setAlignment(Pos.CENTER_RIGHT);
@@ -69,16 +67,13 @@ public class ProfileListItemSkin extends SkinBase<ProfileListItem> {
         btnRemove.setOnMouseClicked(e -> skinnable.remove());
         btnRemove.getStyleClass().add("toggle-icon4");
         BorderPane.setAlignment(btnRemove, Pos.CENTER);
-        btnRemove.setGraphic(SVG.delete(Theme.blackFillBinding(), -1, -1));
+        btnRemove.setGraphic(SVG.close(Theme.blackFillBinding(), 14, 14));
         right.getChildren().add(btnRemove);
         root.setRight(right);
 
-        root.getStyleClass().add("card");
-        root.setStyle("-fx-padding: 8 8 8 0");
-        JFXDepthManager.setDepth(root, 1);
         item.titleProperty().bind(skinnable.titleProperty());
         item.subtitleProperty().bind(skinnable.subtitleProperty());
 
-        getChildren().setAll(root);
+        getChildren().setAll(container);
     }
 }

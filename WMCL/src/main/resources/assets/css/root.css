@@ -18,6 +18,10 @@
 .root {
 }
 
+.svg {
+    -fx-fill: black;
+}
+
 .scroll-bar .thumb {
     -fx-fill: rgba(255, 255, 255, 0.5);
     -fx-arc-width: 5px;
@@ -49,15 +53,79 @@
 }
 
 .rippler-container {
-    -jfx-rippler-fill: -fx-base-check-color;
+    -jfx-rippler-fill: derive(-fx-base-color, 100%);
 }
 
 .rippler-container:selected .label {
     -fx-text-fill: -fx-base-text-fill;
 }
 
+.advanced-list-item .container {
+    -fx-padding: 10 16 10 16;
+    -fx-background-color: null;
+}
+
+.advanced-list-item .container VBox {
+    -fx-padding: 0 0 0 10;
+}
+
+.advanced-list-item .container .image-container {
+    -fx-max-width: 32;
+    -fx-min-width: 32;
+    -fx-max-height: 32;
+    -fx-min-height: 32;
+}
+
+.advanced-list-item .container .title {
+    -fx-font-size: 13;
+    -fx-text-alignment: justify;
+}
+
+.advanced-list-item .container .subtitle {
+    -fx-font-size: 10;
+    -fx-text-alignment: justify;
+}
+
 .advanced-list-item:selected .container {
     -fx-background-color: -fx-base-rippler-color;
+}
+
+.advanced-list-item:selected .container .title {
+    -fx-text-fill: -fx-base-color;
+    -fx-font-weight: bold;
+}
+
+.advanced-list-item:selected .svg {
+    -fx-fill: -fx-base-color;
+}
+
+.navigation-drawer-item .container VBox {
+    -fx-padding: 0 0 0 0;
+}
+
+.navigation-drawer-item .two-line-list-item .title {
+    -fx-font-size: 13;
+}
+
+.navigation-drawer-item .two-line-list-item .subtitle {
+    -fx-font-size: 10;
+}
+
+.profile-list-item BorderPane {
+    -fx-padding: 8 0 8 16;
+}
+
+.profile-list-item:selected BorderPane {
+    -fx-background-color: -fx-base-rippler-color;
+}
+
+.profile-list-item:selected .two-line-list-item .title {
+    -fx-text-fill: -fx-base-color;
+    -fx-font-weight: bold;
+}
+
+.profile-list-item:selected .svg {
+    -fx-fill: -fx-base-color;
 }
 
 .notice-pane > .label {
@@ -69,15 +137,15 @@
 
 .class-title {
     -fx-font-size: 12px;
-    -fx-padding: 0 16 0 16;
+    -fx-padding: 16 16 8 16;
 }
 
 .advanced-list-box-item {
-    -fx-padding: 0 16 0 16;
 }
 
 .advanced-list-box-content {
-    -fx-padding: 20 0 20 0;
+    -fx-padding: 12 0 12 0;
+    -fx-spacing: 0;
 }
 
 .iconed-item {
@@ -262,6 +330,12 @@
 .jfx-layout-actions {
     -fx-padding: 10.0px 0.0 0.0 0.0;
     -fx-alignment: center-right;
+}
+
+.dialog-error {
+    -fx-text-fill: #d32f2f;
+    -fx-font-family: -fx-base-font-family;
+    -fx-padding: 0.7em 0.8em;
 }
 
 .dialog-accept {
@@ -722,14 +796,45 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.26), 5, 0.06, -0.5, 1);
 }
 
+.depth-0 {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0), 0, 0, 0, 0);
+}
+
+.depth-1 {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.26), 10, 0.12, -1, 2);
+}
+
+.depth-2 {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.26), 15, 0.16, 0, 4);
+}
+
+.depth-3 {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.26), 20, 0.19, 0, 6);
+}
+
+.depth-4 {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.26), 25, 0.25, 0, 8);
+}
+
+.depth-5 {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.26), 30, 0.3, 0, 10);
+}
+
 .card {
-    -fx-background-color: WHITE;
+    -fx-background-color: rgba(255, 255, 255, 0.8);
     -fx-background-radius: 4;
     -fx-padding: 8px;
+
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.26), 10, 0.12, -1, 2);
 }
 
 .card:selected {
     -fx-background-color: derive(-fx-base-color, 60%);
+}
+
+.card-list {
+    -fx-padding: 10;
+    -fx-spacing: 10;
 }
 
 .options-sublist {

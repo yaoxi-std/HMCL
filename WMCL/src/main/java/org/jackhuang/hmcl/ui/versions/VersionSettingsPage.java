@@ -69,7 +69,7 @@ import static org.jackhuang.hmcl.ui.FXUtils.newImage;
 import static org.jackhuang.hmcl.ui.FXUtils.stringConverter;
 import static org.jackhuang.hmcl.util.i18n.I18n.i18n;
 
-public final class VersionSettingsPage extends StackPane implements DecoratorPage {
+public final class VersionSettingsPage extends StackPane implements DecoratorPage, VersionPage.VersionLoadable {
     private final ReadOnlyObjectWrapper<State> state = new ReadOnlyObjectWrapper<>(new State("", null, false, false, false));
 
     private VersionSetting lastVersionSetting = null;
@@ -280,6 +280,7 @@ public final class VersionSettingsPage extends StackPane implements DecoratorPag
         FXUtils.unbindBoolean(chkServerUseGui, vs.useGraphicsUserInterfaceProperty());
     }
 
+    @Override
     public void loadVersion(Profile profile, String versionId) {
         this.profile = profile;
         this.versionId = versionId;

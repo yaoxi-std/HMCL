@@ -107,6 +107,9 @@ public class HMCLGameRepository extends DefaultGameRepository {
         } catch (IOException ex) {
             Logging.LOG.log(Level.WARNING, "Unable to create launcher_profiles.json, Forge/LiteLoader installer will not work.", ex);
         }
+
+        // https://github.com/huanghongxun/HMCL/issues/938
+        System.gc();
     }
 
     public void changeDirectory(File newDirectory) {
@@ -130,7 +133,9 @@ public class HMCLGameRepository extends DefaultGameRepository {
 
         if (dstDir.exists()) throw new IOException("Version exists");
         FileUtils.copyDirectory(srcDir.toPath(), dstDir.toPath());
-        Files.move(dstDir.toPath().resolve(srcId + ".jar"), dstDir.toPath().resolve(dstId + ".jar"));
+        if (Files.exists(dstDir.toPath().resolve(srcId + ".jar"))) {
+            Files.move(dstDir.toPath().resolve(srcId + ".jar"), dstDir.toPath().resolve(dstId + ".jar"));
+        }
         Files.move(dstDir.toPath().resolve(srcId + ".json"), dstDir.toPath().resolve(dstId + ".json"));
         VersionSetting oldVersionSetting = getVersionSetting(srcId).clone();
         GameDirectoryType originalGameDirType = oldVersionSetting.getGameDirType();

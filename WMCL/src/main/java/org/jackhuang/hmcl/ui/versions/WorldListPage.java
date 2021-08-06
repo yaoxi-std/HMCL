@@ -47,7 +47,7 @@ import java.util.stream.Stream;
 
 import static org.jackhuang.hmcl.util.i18n.I18n.i18n;
 
-public class WorldListPage extends ListPageBase<WorldListItem> {
+public class WorldListPage extends ListPageBase<WorldListItem> implements VersionPage.VersionLoadable {
     private final BooleanProperty showAll = new SimpleBooleanProperty(this, "showAll", false);
 
     private Path savesDir;
@@ -74,11 +74,11 @@ public class WorldListPage extends ListPageBase<WorldListItem> {
         return new WorldListPageSkin();
     }
 
-    public CompletableFuture<?> loadVersion(Profile profile, String id) {
+    public void loadVersion(Profile profile, String id) {
         this.profile = profile;
         this.id = id;
         this.savesDir = profile.getRepository().getRunDirectory(id).toPath().resolve("saves");
-        return refresh();
+        refresh();
     }
 
     public CompletableFuture<?> refresh() {
@@ -100,6 +100,9 @@ public class WorldListPage extends ListPageBase<WorldListItem> {
                         itemsProperty().setAll(result.stream()
                                 .filter(world -> isShowAll() || world.getGameVersion() == null || world.getGameVersion().equals(gameVersion))
                                 .map(WorldListItem::new).collect(Collectors.toList()));
+
+                    // https://github.com/huanghongxun/HMCL/issues/938
+                    System.gc();
                 }, Platform::runLater);
     }
 

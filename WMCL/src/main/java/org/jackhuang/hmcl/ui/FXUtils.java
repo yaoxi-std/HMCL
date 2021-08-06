@@ -24,6 +24,8 @@ import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
+import javafx.beans.WeakInvalidationListener;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -110,6 +112,16 @@ public final class FXUtils {
     public static <T> WeakChangeListener<T> onWeakChangeAndOperate(ObservableValue<T> value, Consumer<T> consumer) {
         consumer.accept(value.getValue());
         return onWeakChange(value, consumer);
+    }
+
+    public static InvalidationListener observeWeak(Runnable runnable, Observable... observables) {
+        InvalidationListener originalListener = observable -> runnable.run();
+        WeakInvalidationListener listener = new WeakInvalidationListener(originalListener);
+        for (Observable observable : observables) {
+            observable.addListener(listener);
+        }
+        runnable.run();
+        return originalListener;
     }
 
     public static void runLaterIf(BooleanSupplier condition, Runnable runnable) {
